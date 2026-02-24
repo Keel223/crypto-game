@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CryptoMine PRO</title>
-    <!-- Подключаем иконки и шрифты -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
@@ -27,8 +26,13 @@
 
         .main-content { flex: 1; padding: 30px 40px; overflow-y: auto; position: relative; }
         .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
-        .balance-badge { background: var(--bg-card); padding: 10px 20px; border-radius: var(--radius); border: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
-        .balance-amount { color: var(--primary); font-weight: 700; font-size: 18px; }
+        
+        /* Двойной баланс */
+        .balance-wrapper { display: flex; gap: 15px; flex-wrap: wrap; }
+        .balance-badge { background: var(--bg-card); padding: 10px 20px; border-radius: var(--radius); border: 1px solid var(--border); display: flex; align-items: center; gap: 10px; min-width: 180px; }
+        .balance-badge.usdt { border-color: var(--green); }
+        .balance-amount { font-weight: 700; font-size: 18px; }
+        .currency-label { font-size: 12px; color: var(--text-muted); font-weight: 600; }
 
         .tab-section { display: none; animation: slideUp 0.3s ease-out; }
         .tab-section.active { display: block; }
@@ -69,6 +73,7 @@
             .menu-toggle { display: block; }
             .top-bar { flex-direction: column; align-items: flex-start; gap: 15px; }
             .user-widget { width: 100%; justify-content: space-between; }
+            .balance-wrapper { width: 100%; }
         }
 
         .toast { position: fixed; bottom: 30px; right: 30px; background: var(--bg-card); border-left: 4px solid var(--primary); padding: 15px 25px; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); transform: translateX(200%); transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55); z-index: 1000; display: flex; align-items: center; gap: 12px; }
@@ -96,18 +101,33 @@
                     <p style="color: var(--text-muted); font-size: 14px;" id="pageSubtitle">Майнинг и улучшения</p>
                 </div>
             </div>
-            <div class="user-widget balance-badge">
-                <i class="fa-solid fa-coins" style="color: var(--primary);"></i>
-                <span class="balance-amount" id="globalBalance">0.00000000</span> <span style="font-size:12px; color:var(--text-muted);">USDT</span>
+            
+            <!-- ДВА БАЛАНСА -->
+            <div class="user-widget balance-wrapper">
+                <div class="balance-badge">
+                    <i class="fa-solid fa-coins" style="color: var(--primary);"></i>
+                    <div>
+                        <div class="balance-amount" id="globalGcoin">0</div>
+                        <div class="currency-label">G-COIN (Игра)</div>
+                    </div>
+                </div>
+                <div class="balance-badge usdt">
+                    <i class="fa-brands fa-usdt" style="color: var(--green);"></i>
+                    <div>
+                        <div class="balance-amount" id="globalUsdt">0.00</div>
+                        <div class="currency-label">USDT (Вывод)</div>
+                    </div>
+                </div>
             </div>
         </div>
 
+        <!-- 1. DASHBOARD -->
         <div id="dashboard" class="tab-section active">
             <div class="card-grid">
                 <div class="card" style="text-align: center;">
                     <h3>Майнинг</h3>
                     <div class="mine-btn" id="mineBtn" onclick="game.mine()"><i class="fa-solid fa-microchip"></i></div>
-                    <p style="color: var(--text-muted);">Нажми, чтобы добыть</p>
+                    <p style="color: var(--text-muted);">Нажимай, чтобы добывать G-COIN</p>
                 </div>
                 <div class="card">
                     <h3>Улучшения</h3>
@@ -122,43 +142,42 @@
             </div>
         </div>
 
+        <!-- 2. MARKET -->
         <div id="market" class="tab-section">
             <div class="card">
                 <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
-                    <h3>Рынок</h3>
+                    <h3>P2P Рынок (Торговля за USDT)</h3>
                     <button class="btn btn-outline" style="width: auto;" onclick="market.load()"><i class="fa-solid fa-rotate"></i></button>
                 </div>
                 <div id="marketList"></div>
             </div>
         </div>
 
+        <!-- 3. BANK -->
         <div id="bank" class="tab-section">
             <div class="card-grid">
                 <div class="card">
-                    <h3>Пополнить счет</h3>
+                    <h3>Пополнить USDT</h3>
                     
-                    <!-- БЛОК ПРЕДУПРЕЖДЕНИЯ О СЕТИ -->
                     <div style="background: rgba(255, 71, 87, 0.15); border: 1px solid var(--red); padding: 15px; border-radius: 8px; margin-bottom: 20px; display: flex; gap: 10px; align-items: flex-start;">
                         <i class="fa-solid fa-triangle-exclamation" style="color: var(--red); font-size: 20px; margin-top: 2px;"></i>
                         <div>
-                            <div style="color: var(--red); font-weight: 700; margin-bottom: 5px;">Внимание! Выберите правильную сеть</div>
+                            <div style="color: var(--red); font-weight: 700; margin-bottom: 5px;">Внимание! Сеть TRC20</div>
                             <div style="font-size: 13px; color: var(--text-main); line-height: 1.4;">
-                                Отправляйте <strong>USDT</strong> только в сети <strong>TRC20 (Tron)</strong>.<br>
-                                <span style="color: var(--text-muted);">Использование других сетей (BEP20, ERC20) приведет к потере средств!</span>
+                                Отправляйте <strong>USDT</strong> только в сети <strong>TRC20</strong>.
                             </div>
                         </div>
                     </div>
-                    <!-- КОНЕЦ БЛОКА -->
 
                     <div id="depStep1">
                         <div class="form-group"><label class="form-label">Сумма пополнения (USDT)</label><input type="number" id="depAmount" class="form-input" placeholder="Например: 10"></div>
-                        <button class="btn btn-primary" onclick="bank.createInvoice()">Создать заявку на пополнение</button>
+                        <button class="btn btn-primary" onclick="bank.createInvoice()">Создать заявку</button>
                     </div>
                     <div id="depStep2" style="display: none;">
                         <div class="deposit-box">
                             <div style="margin-bottom: 10px;"><strong>Сеть:</strong> <span style="color: var(--primary);">TRC20</span></div>
                             <div style="margin-bottom: 10px;"><strong>Адрес:</strong> <span id="depAddress"></span></div>
-                            <div style="color: var(--red); margin-bottom: 10px; font-weight: bold;"><strong>Payment ID (Обязательно в Note):</strong> <span id="depId"></span></div>
+                            <div style="color: var(--red); margin-bottom: 10px; font-weight: bold;"><strong>Payment ID (Note):</strong> <span id="depId"></span></div>
                             <div><strong>Сумма:</strong> <span id="depAmountDisplay"></span></div>
                         </div>
                         <div class="qr-placeholder">
@@ -169,14 +188,15 @@
                     </div>
                 </div>
                 <div class="card">
-                    <h3>Вывести средства</h3>
+                    <h3>Вывести USDT</h3>
                     <div class="form-group"><label class="form-label">FaucetPay Адрес</label><input type="text" id="wdAddress" class="form-input"></div>
                     <div class="form-group"><label class="form-label">Сумма (Мин. 1)</label><input type="number" id="wdAmount" class="form-input"></div>
-                    <button class="btn btn-danger" onclick="bank.withdraw()">Вывести</button>
+                    <button class="btn btn-danger" onclick="bank.withdraw()">Вывести USDT</button>
                 </div>
             </div>
         </div>
 
+        <!-- 4. INVENTORY -->
         <div id="inventory" class="tab-section">
             <div class="card">
                 <h3>Мои предметы</h3>
@@ -188,7 +208,7 @@
     <div id="toast" class="toast"><i class="fa-solid fa-circle-info"></i> <span id="toastMsg"></span></div>
 
     <script>
-        const API_URL = window.location.origin + '/api'; // Автоматически подставит домен Vercel
+        const API_URL = window.location.origin + '/api';
         let currentUser = localStorage.getItem('cm_user_id') || 'user_' + Math.floor(Math.random() * 100000);
         localStorage.setItem('cm_user_id', currentUser);
 
@@ -203,7 +223,7 @@
                 document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
                 document.getElementById(id).classList.add('active');
                 el.classList.add('active');
-                const titles = { dashboard: ['Ферма','Майнинг'], market: ['P2P','Торговля'], bank: ['Банк','Финансы'], inventory: ['Инвентарь','Вещи'] };
+                const titles = { dashboard: ['Ферма','Добыча G-COIN'], market: ['P2P','Торговля за USDT'], bank: ['Банк','Финансы USDT'], inventory: ['Инвентарь','Предметы'] };
                 document.getElementById('pageTitle').innerText = titles[id][0];
                 document.getElementById('pageSubtitle').innerText = titles[id][1];
                 if(id === 'market') market.load();
@@ -225,7 +245,8 @@
                 try {
                     const r = await fetch(`${API_URL}/user/${currentUser}`);
                     game.data = await r.json();
-                    document.getElementById('globalBalance').innerText = game.data.balance.toFixed(8);
+                    document.getElementById('globalGcoin').innerText = game.data.balances.gcoin;
+                    document.getElementById('globalUsdt').innerText = game.data.balances.usdt.toFixed(8);
                     document.getElementById('statPower').innerText = game.data.currentPower;
                     game.renderUpgrades();
                 } catch(e) {}
@@ -235,7 +256,7 @@
                 try {
                     const r = await fetch(`${API_URL}/mine`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({userId:currentUser}) });
                     const d = await r.json();
-                    if(d.success) { ui.toast(`+${d.reward} USDT`, 'success'); game.updateData(); }
+                    if(d.success) { ui.toast(`+${d.reward} G-COIN`, 'success'); game.updateData(); }
                 } catch(e) { ui.toast('Ошибка сети', 'error'); }
             },
             renderUpgrades: () => {
@@ -247,8 +268,8 @@
                     const lvl = game.data.level[k];
                     const div = document.createElement('div'); div.className='upgrade-row';
                     div.innerHTML = `<div><strong>${names[k]}</strong><br><small>Ур. ${lvl}</small></div>
-                    <button class="btn ${game.data.balance>=price?'btn-primary':'btn-outline'}" style="width:auto;padding:6px 12px;" 
-                    onclick="game.buyUpgrade('${k}')" ${game.data.balance<price?'disabled':''}>${price}</button>`;
+                    <button class="btn ${game.data.balances.gcoin>=price?'btn-primary':'btn-outline'}" style="width:auto;padding:6px 12px;" 
+                    onclick="game.buyUpgrade('${k}')" ${game.data.balances.gcoin<price?'disabled':''}>${price} G</button>`;
                     l.appendChild(div);
                 }
             },
@@ -262,7 +283,7 @@
                 if(game.data.inventory.length===0) l.innerHTML='<p style="text-align:center;padding:20px;color:var(--text-muted)">Пусто</p>';
                 game.data.inventory.forEach(i => {
                     const div = document.createElement('div'); div.className='market-item';
-                    div.innerHTML = `<div><strong>${i.type}</strong> (${i.value})</div><button class="btn btn-outline" style="width:auto" onclick="market.sellItem('${i.id}')">Продать</button>`;
+                    div.innerHTML = `<div><strong>${i.type}</strong> (Ценность: ${i.value})</div><button class="btn btn-outline" style="width:auto" onclick="market.sellItem('${i.id}')">Продать за USDT</button>`;
                     l.appendChild(div);
                 });
             }
@@ -276,21 +297,21 @@
                     d.forEach(item => {
                         const div = document.createElement('div'); div.className='market-item';
                         div.innerHTML = `<div><strong>${item.item.type}</strong> от ${item.sellerId.substr(0,6)}...</div>
-                        <div style="display:flex;align-items:center;gap:10px;"><span style="font-weight:bold;color:var(--primary)">${item.price}</span>
+                        <div style="display:flex;align-items:center;gap:10px;"><span style="font-weight:bold;color:var(--green)">${item.price} USDT</span>
                         <button class="btn btn-primary" style="width:auto;padding:6px 12px;" onclick="market.buy('${item.id}',${item.price})">Купить</button></div>`;
                         l.appendChild(div);
                     });
                 } catch(e){}
             },
             buy: async (id, price) => {
-                if(!confirm(`Купить за ${price}?`)) return;
+                if(!confirm(`Купить за ${price} USDT?`)) return;
                 await fetch(`${API_URL}/market/buy`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({userId:currentUser, listingId:id}) });
                 ui.toast('Куплено!', 'success'); market.load(); game.updateData();
             },
             sellItem: async (id) => {
-                const p = prompt('Цена:'); if(!p) return;
+                const p = prompt('Цена в USDT:'); if(!p) return;
                 await fetch(`${API_URL}/market/sell`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({userId:currentUser, itemId:id, price:parseFloat(p)}) });
-                ui.toast('Выставлено', 'success'); game.updateData();
+                ui.toast('Выставлено на рынок', 'success'); game.updateData();
             }
         };
 
@@ -324,4 +345,4 @@
         ui.init();
     </script>
 </body>
-                                                                                                     </html>
+    </html>
