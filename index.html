@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CryptoMine PRO</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-body: #0b0e11; --bg-sidebar: #1e2329; --bg-card: #1e2329;
+            --bg-input: #2b3139; --primary: #fcd535; --accent: #3b82f6;
+            --text-main: #eaecef; --text-muted: #848e9c; --border: #2b3139;
+            --green: #0ecb81; --red: #f6465d; --radius: 12px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; outline: none; }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-body); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
+        
+        .sidebar { width: 260px; background-color: var(--bg-sidebar); display: flex; flex-direction: column; padding: 24px; border-right: 1px solid var(--border); z-index: 100; }
+        .logo { font-size: 24px; font-weight: 800; color: var(--primary); margin-bottom: 40px; display: flex; align-items: center; gap: 12px; }
+        .nav-menu { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+        .nav-item { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-radius: var(--radius); color: var(--text-muted); font-size: 15px; font-weight: 500; cursor: pointer; transition: 0.2s; }
+        .nav-item:hover { background-color: rgba(252, 213, 53, 0.1); color: var(--text-main); }
+        .nav-item.active { background-color: var(--primary); color: #0b0e11; font-weight: 700; }
+        .nav-item i { width: 20px; text-align: center; }
+
+        .main-content { flex: 1; padding: 30px 40px; overflow-y: auto; position: relative; }
+        .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .balance-badge { background: var(--bg-card); padding: 10px 20px; border-radius: var(--radius); border: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
+        .balance-amount { color: var(--primary); font-weight: 700; font-size: 18px; }
+
+        .tab-section { display: none; animation: slideUp 0.3s ease-out; }
+        .tab-section.active { display: block; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        .card { background: var(--bg-card); padding: 24px; border-radius: var(--radius); border: 1px solid var(--border); position: relative; }
+        .card h3 { font-size: 18px; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+
+        .btn { background: var(--accent); color: white; border: none; padding: 12px 24px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 8px; justify-content: center; }
+        .btn:hover { opacity: 0.9; transform: translateY(-1px); }
+        .btn-primary { background: var(--primary); color: #0b0e11; }
+        .btn-danger { background: var(--red); }
+        .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text-muted); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+        .mine-btn { width: 160px; height: 160px; border-radius: 50%; margin: 0 auto 20px; background: radial-gradient(circle at 30% 30%, #ffd700, #ff8c00); border: 8px solid #cc7000; font-size: 50px; color: #5c3a00; cursor: pointer; transition: transform 0.1s; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 30px rgba(255, 215, 0, 0.2); }
+        .mine-btn:active { transform: scale(0.95); }
+
+        .market-item { display: flex; justify-content: space-between; align-items: center; background: var(--bg-input); padding: 15px; border-radius: 8px; margin-bottom: 10px; border-left: 4px solid var(--accent); }
+        
+        .deposit-box { background: rgba(59, 130, 246, 0.1); border: 1px dashed var(--accent); padding: 20px; border-radius: 8px; text-align: center; }
+        .qr-placeholder { width: 140px; height: 140px; background: white; margin: 15px auto; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+        .qr-placeholder img { width: 100%; height: 100%; border-radius: 8px; object-fit: contain; }
+
+        .form-group { margin-bottom: 15px; }
+        .form-label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 6px; }
+        .form-input { width: 100%; background: var(--bg-input); border: 1px solid transparent; color: white; padding: 12px; border-radius: 8px; font-size: 14px; }
+        .form-input:focus { border-color: var(--accent); }
+
+        .upgrade-row { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: rgba(255,255,255,0.03); border-radius: 8px; margin-bottom: 10px; }
+
+        .menu-toggle { display: none; font-size: 24px; cursor: pointer; }
+        @media (max-width: 768px) {
+            .sidebar { position: fixed; left: -260px; height: 100%; transition: 0.3s; }
+            .sidebar.open { left: 0; }
+            .main-content { margin-left: 0; padding: 20px; }
+            .menu-toggle { display: block; }
+            .top-bar { flex-direction: column; align-items: flex-start; gap: 15px; }
+            .user-widget { width: 100%; justify-content: space-between; }
+        }
+
+        .toast { position: fixed; bottom: 30px; right: 30px; background: var(--bg-card); border-left: 4px solid var(--primary); padding: 15px 25px; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); transform: translateX(200%); transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55); z-index: 1000; display: flex; align-items: center; gap: 12px; }
+        .toast.show { transform: translateX(0); }
+    </style>
+</head>
+<body>
+    <nav class="sidebar" id="sidebar">
+        <div class="logo"><i class="fa-solid fa-cube"></i> CryptoMine</div>
+        <ul class="nav-menu">
+            <li class="nav-item active" onclick="ui.switchTab('dashboard', this)"><i class="fa-solid fa-chart-line"></i> Ферма</li>
+            <li class="nav-item" onclick="ui.switchTab('market', this)"><i class="fa-solid fa-shop"></i> P2P Рынок</li>
+            <li class="nav-item" onclick="ui.switchTab('bank', this)"><i class="fa-solid fa-wallet"></i> Банк</li>
+            <li class="nav-item" onclick="ui.switchTab('inventory', this)"><i class="fa-solid fa-box-open"></i> Инвентарь</li>
+        </ul>
+        <div style="margin-top: auto; font-size: 12px; color: var(--text-muted);">ID: <span id="userIdDisplay">...</span></div>
+    </nav>
+
+    <main class="main-content">
+        <div class="top-bar">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <i class="fa-solid fa-bars menu-toggle" onclick="document.getElementById('sidebar').classList.toggle('open')"></i>
+                <div>
+                    <h1 style="font-size: 24px;" id="pageTitle">Ферма</h1>
+                    <p style="color: var(--text-muted); font-size: 14px;" id="pageSubtitle">Майнинг и улучшения</p>
+                </div>
+            </div>
+            <div class="user-widget balance-badge">
+                <i class="fa-solid fa-coins" style="color: var(--primary);"></i>
+                <span class="balance-amount" id="globalBalance">0.00000000</span> <span style="font-size:12px; color:var(--text-muted);">USDT</span>
+            </div>
+        </div>
+
+        <div id="dashboard" class="tab-section active">
+            <div class="card-grid">
+                <div class="card" style="text-align: center;">
+                    <h3>Майнинг</h3>
+                    <div class="mine-btn" id="mineBtn" onclick="game.mine()"><i class="fa-solid fa-microchip"></i></div>
+                    <p style="color: var(--text-muted);">Нажми, чтобы добыть</p>
+                </div>
+                <div class="card">
+                    <h3>Улучшения</h3>
+                    <div id="upgradesList">Загрузка...</div>
+                </div>
+            </div>
+            <div style="margin-top: 20px; background: rgba(255,255,255,0.03); padding: 15px; border-radius: 8px; display: flex; justify-content: space-around;">
+                <div style="text-align: center;">
+                    <div style="font-size: 12px; color: var(--text-muted);">Сила клика</div>
+                    <div style="font-size: 20px; font-weight: bold;" id="statPower">0</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="market" class="tab-section">
+            <div class="card">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+                    <h3>Рынок</h3>
+                    <button class="btn btn-outline" style="width: auto;" onclick="market.load()"><i class="fa-solid fa-rotate"></i></button>
+                </div>
+                <div id="marketList"></div>
+            </div>
+        </div>
+
+        <div id="bank" class="tab-section">
+            <div class="card-grid">
+                <div class="card">
+                    <h3>Пополнить счет</h3>
+                    <div id="depStep1">
+                        <div class="form-group"><label class="form-label">Сумма (USDT)</label><input type="number" id="depAmount" class="form-input" placeholder="10"></div>
+                        <button class="btn btn-primary" onclick="bank.createInvoice()">Создать заявку</button>
+                    </div>
+                    <div id="depStep2" style="display: none;">
+                        <div class="deposit-box">
+                            <div style="margin-bottom: 10px;"><strong>Адрес:</strong> <span id="depAddress"></span></div>
+                            <div style="color: var(--red); margin-bottom: 10px;"><strong>ID платежа (Note):</strong> <span id="depId"></span></div>
+                            <div><strong>Сумма:</strong> <span id="depAmountDisplay"></span></div>
+                        </div>
+                        <div class="qr-placeholder"><img id="qrImage" src="" style="display:none;"></div>
+                        <button class="btn btn-outline" onclick="bank.copyData()">Копировать данные</button>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3>Вывести средства</h3>
+                    <div class="form-group"><label class="form-label">FaucetPay Адрес</label><input type="text" id="wdAddress" class="form-input"></div>
+                    <div class="form-group"><label class="form-label">Сумма (Мин. 1)</label><input type="number" id="wdAmount" class="form-input"></div>
+                    <button class="btn btn-danger" onclick="bank.withdraw()">Вывести</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="inventory" class="tab-section">
+            <div class="card">
+                <h3>Мои предметы</h3>
+                <div id="inventoryList"></div>
+            </div>
+        </div>
+    </main>
+
+    <div id="toast" class="toast"><i class="fa-solid fa-circle-info"></i> <span id="toastMsg"></span></div>
+
+    <script>
+        const API_URL = window.location.origin + '/api'; // Автоматически подставит домен Vercel
+        let currentUser = localStorage.getItem('cm_user_id') || 'user_' + Math.floor(Math.random() * 100000);
+        localStorage.setItem('cm_user_id', currentUser);
+
+        const ui = {
+            init: () => {
+                document.getElementById('userIdDisplay').textContent = currentUser;
+                game.updateData();
+                setInterval(game.updateData, 5000);
+            },
+            switchTab: (id, el) => {
+                document.querySelectorAll('.tab-section').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+                document.getElementById(id).classList.add('active');
+                el.classList.add('active');
+                const titles = { dashboard: ['Ферма','Майнинг'], market: ['P2P','Торговля'], bank: ['Банк','Финансы'], inventory: ['Инвентарь','Вещи'] };
+                document.getElementById('pageTitle').innerText = titles[id][0];
+                document.getElementById('pageSubtitle').innerText = titles[id][1];
+                if(id === 'market') market.load();
+                if(id === 'inventory') game.renderInventory();
+                document.getElementById('sidebar').classList.remove('open');
+            },
+            toast: (msg, type='info') => {
+                const t = document.getElementById('toast');
+                document.getElementById('toastMsg').innerText = msg;
+                t.style.borderLeftColor = type === 'success' ? 'var(--green)' : (type === 'error' ? 'var(--red)' : 'var(--primary)');
+                t.classList.add('show');
+                setTimeout(() => t.classList.remove('show'), 3000);
+            }
+        };
+
+        const game = {
+            data: null,
+            updateData: async () => {
+                try {
+                    const r = await fetch(`${API_URL}/user/${currentUser}`);
+                    game.data = await r.json();
+                    document.getElementById('globalBalance').innerText = game.data.balance.toFixed(8);
+                    document.getElementById('statPower').innerText = game.data.currentPower;
+                    game.renderUpgrades();
+                } catch(e) {}
+            },
+            mine: async () => {
+                const btn = document.getElementById('mineBtn'); btn.style.transform='scale(0.9)'; setTimeout(()=>btn.style.transform='scale(1)',100);
+                try {
+                    const r = await fetch(`${API_URL}/mine`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({userId:currentUser}) });
+                    const d = await r.json();
+                    if(d.success) { ui.toast(`+${d.reward} USDT`, 'success'); game.updateData(); }
+                } catch(e) { ui.toast('Ошибка сети', 'error'); }
+            },
+            renderUpgrades: () => {
+                if(!game.data) return;
+                const l = document.getElementById('upgradesList'); l.innerHTML='';
+                const names = { cpu:'Видеокарта', electricity:'Электричество' };
+                for(let k in game.data.upgradePrices) {
+                    const price = game.data.upgradePrices[k];
+                    const lvl = game.data.level[k];
+                    const div = document.createElement('div'); div.className='upgrade-row';
+                    div.innerHTML = `<div><strong>${names[k]}</strong><br><small>Ур. ${lvl}</small></div>
+                    <button class="btn ${game.data.balance>=price?'btn-primary':'btn-outline'}" style="width:auto;padding:6px 12px;" 
+                    onclick="game.buyUpgrade('${k}')" ${game.data.balance<price?'disabled':''}>${price}</button>`;
+                    l.appendChild(div);
+                }
+            },
+            buyUpgrade: async (t) => {
+                await fetch(`${API_URL}/upgrade`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({userId:currentUser, type:t}) });
+                game.updateData();
+            },
+            renderInventory: () => {
+                if(!game.data) return;
+                const l = document.getElementById('inventoryList'); l.innerHTML='';
+                if(game.data.inventory.length===0) l.innerHTML='<p style="text-align:center;padding:20px;color:var(--text-muted)">Пусто</p>';
+                game.data.inventory.forEach(i => {
+                    const div = document.createElement('div'); div.className='market-item';
+                    div.innerHTML = `<div><strong>${i.type}</strong> (${i.value})</div><button class="btn btn-outline" style="width:auto" onclick="market.sellItem('${i.id}')">Продать</button>`;
+                    l.appendChild(div);
+                });
+            }
+        };
+
+        const market = {
+            load: async () => {
+                try {
+                    const r = await fetch(`${API_URL}/market`); const d = await r.json();
+                    const l = document.getElementById('marketList'); l.innerHTML='';
+                    d.forEach(item => {
+                        const div = document.createElement('div'); div.className='market-item';
+                        div.innerHTML = `<div><strong>${item.item.type}</strong> от ${item.sellerId.substr(0,6)}...</div>
+                        <div style="display:flex;align-items:center;gap:10px;"><span style="font-weight:bold;color:var(--primary)">${item.price}</span>
+                        <button class="btn btn-primary" style="width:auto;padding:6px 12px;" onclick="market.buy('${item.id}',${item.price})">Купить</button></div>`;
+                        l.appendChild(div);
+                    });
+                } catch(e){}
+            },
+            buy: async (id, price) => {
+                if(!confirm(`Купить за ${price}?`)) return;
+                await fetch(`${API_URL}/market/buy`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({userId:currentUser, listingId:id}) });
+                ui.toast('Куплено!', 'success'); market.load(); game.updateData();
+            },
+            sellItem: async (id) => {
+                const p = prompt('Цена:'); if(!p) return;
+                await fetch(`${API_URL}/market/sell`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({userId:currentUser, itemId:id, price:parseFloat(p)}) });
+                ui.toast('Выставлено', 'success'); game.updateData();
+            }
+        };
+
+        const bank = {
+            createInvoice: async () => {
+                const a = document.getElementById('depAmount').value; if(!a) return ui.toast('Укажи сумму','error');
+                try {
+                    const r = await fetch(`${API_URL}/deposit/create`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({userId:currentUser, amount:a}) });
+                    const d = await r.json();
+                    if(d.success) {
+                        document.getElementById('depStep1').style.display='none'; document.getElementById('depStep2').style.display='block';
+                        document.getElementById('depAddress').innerText = d.address;
+                        document.getElementById('depId').innerText = d.paymentId;
+                        document.getElementById('depAmountDisplay').innerText = d.amount + ' USDT';
+                        if(d.qrCodeLink) { const img = document.getElementById('qrImage'); img.src=d.qrCodeLink; img.style.display='block'; }
+                    }
+                } catch(e) { ui.toast('Ошибка','error'); }
+            },
+            copyData: () => {
+                navigator.clipboard.writeText(`Адрес: ${document.getElementById('depAddress').innerText}\nID: ${document.getElementById('depId').innerText}`);
+                ui.toast('Скопировано', 'success');
+            },
+            withdraw: async () => {
+                const addr = document.getElementById('wdAddress').value; const amt = document.getElementById('wdAmount').value;
+                if(!addr || !amt) return ui.toast('Заполни поля','error');
+                await fetch(`${API_URL}/withdraw`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({userId:currentUser, toAddress:addr, amount:parseFloat(amt)}) });
+                ui.toast('Заявка создана', 'success'); game.updateData();
+            }
+        };
+
+        ui.init();
+    </script>
+</body>
+</html>
