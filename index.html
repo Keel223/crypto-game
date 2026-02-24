@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CryptoMine PRO</title>
+    <!-- Подключаем иконки и шрифты -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
@@ -135,17 +136,35 @@
             <div class="card-grid">
                 <div class="card">
                     <h3>Пополнить счет</h3>
+                    
+                    <!-- БЛОК ПРЕДУПРЕЖДЕНИЯ О СЕТИ -->
+                    <div style="background: rgba(255, 71, 87, 0.15); border: 1px solid var(--red); padding: 15px; border-radius: 8px; margin-bottom: 20px; display: flex; gap: 10px; align-items: flex-start;">
+                        <i class="fa-solid fa-triangle-exclamation" style="color: var(--red); font-size: 20px; margin-top: 2px;"></i>
+                        <div>
+                            <div style="color: var(--red); font-weight: 700; margin-bottom: 5px;">Внимание! Выберите правильную сеть</div>
+                            <div style="font-size: 13px; color: var(--text-main); line-height: 1.4;">
+                                Отправляйте <strong>USDT</strong> только в сети <strong>TRC20 (Tron)</strong>.<br>
+                                <span style="color: var(--text-muted);">Использование других сетей (BEP20, ERC20) приведет к потере средств!</span>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- КОНЕЦ БЛОКА -->
+
                     <div id="depStep1">
-                        <div class="form-group"><label class="form-label">Сумма (USDT)</label><input type="number" id="depAmount" class="form-input" placeholder="10"></div>
-                        <button class="btn btn-primary" onclick="bank.createInvoice()">Создать заявку</button>
+                        <div class="form-group"><label class="form-label">Сумма пополнения (USDT)</label><input type="number" id="depAmount" class="form-input" placeholder="Например: 10"></div>
+                        <button class="btn btn-primary" onclick="bank.createInvoice()">Создать заявку на пополнение</button>
                     </div>
                     <div id="depStep2" style="display: none;">
                         <div class="deposit-box">
+                            <div style="margin-bottom: 10px;"><strong>Сеть:</strong> <span style="color: var(--primary);">TRC20</span></div>
                             <div style="margin-bottom: 10px;"><strong>Адрес:</strong> <span id="depAddress"></span></div>
-                            <div style="color: var(--red); margin-bottom: 10px;"><strong>ID платежа (Note):</strong> <span id="depId"></span></div>
+                            <div style="color: var(--red); margin-bottom: 10px; font-weight: bold;"><strong>Payment ID (Обязательно в Note):</strong> <span id="depId"></span></div>
                             <div><strong>Сумма:</strong> <span id="depAmountDisplay"></span></div>
                         </div>
-                        <div class="qr-placeholder"><img id="qrImage" src="" style="display:none;"></div>
+                        <div class="qr-placeholder">
+                            <img id="qrImage" src="" style="display:none;">
+                            <span id="qrText" style="color:black; font-size:12px;">QR Код</span>
+                        </div>
                         <button class="btn btn-outline" onclick="bank.copyData()">Копировать данные</button>
                     </div>
                 </div>
@@ -305,4 +324,4 @@
         ui.init();
     </script>
 </body>
-</html>
+                                                                                                     </html>
